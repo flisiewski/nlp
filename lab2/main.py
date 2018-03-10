@@ -1,4 +1,4 @@
-from elasticsearch_dsl import analyzer, DocType, Text, Date, Keyword
+from elasticsearch_dsl import analyzer, DocType, Text, Date, Keyword, Nested, InnerDoc
 
 analyzer(
     'my_tokenizer',
@@ -7,26 +7,13 @@ analyzer(
 )
 
 
-class Judgment(DocType)
-    content = Text(analyzer='morfologik')
+class Judge(InnerDoc):
+    first_name = Text(analyzer=analyzer)
+    last_name = Text(analyzer=analyzer)
+
+
+class Judgment(DocType):
+    content = Text(analyzer=analyzer)
     judgment_date = Date()
     signature = Keyword()
-    judges = List
-
-
-class Article(DocType):
-    title = Text(analyzer='snowball', fields={'raw': Keyword()})
-    body = Text(analyzer='snowball')
-    tags = Keyword()
-    published_from = Date()
-    lines = Integer()
-
-    class Meta:
-        index = 'blog'
-
-    def save(self, **kwargs):
-        self.lines = len(self.body.split())
-        return super(Article, self).save(**kwargs)
-
-    def is_published(self):
-        return datetime.now() >= self.published_from
+    judges = Nested
