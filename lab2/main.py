@@ -1,5 +1,6 @@
 import json
 import os
+import pickle
 
 from tqdm import tqdm
 from elasticsearch_dsl import analyzer, DocType, Text, Date, Keyword, Nested, InnerDoc
@@ -21,16 +22,20 @@ class Judgment(DocType):
     signature = Keyword()
     judges = Nested(Judge)
 
+    class Meta:
+        index = 'judgments'
+
 
 Judge.init()
 Judgment.init()
 
 DATA_DIR = "/run/media/maciej/Nowy/data/json/"
 CHOSEN_YEAR = str(2011)
+FILE_LIST = 'good_files.txt'
 
 
 def load_data():
-    files = os.listdir(DATA_DIR)
+    files = pickle.load(open(FILE_LIST, 'rb'))
     results = []
     for file in tqdm(files):
         if file.startswith("judgment"):
@@ -46,8 +51,7 @@ def load_data():
                     judgment_date=judgment['judgmentDate'],
                     signature=judgment['id'],
                     judge=[Judge(name=judge['name']) for judge in judgment['judges']],
-                )
-                Judgment.save()
+                ).save()
 
     return results
 
