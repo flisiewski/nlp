@@ -16,4 +16,4 @@ class Judgment(DocType):
     content = Text(analyzer=analyzer)
     judgment_date = Date()
     signature = Keyword()
-    judges = Nested
+    judges = Nested(Judge)
