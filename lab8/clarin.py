@@ -71,4 +71,4 @@ def process(data):
         file_id = status_data['value'][0]['fileID']
         return download_processed_data(file_id)
     else:
-        print('Error: ', status['value'])
+        print('Error: ', status_data['value'])
