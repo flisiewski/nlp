@@ -1,14 +1,11 @@
-import os, json, pickle
+import os, json
 
 import regex
 from gensim.models import Phrases
-from gensim.models.phrases import Phraser
 from tqdm import tqdm
 
 word_pattern = "\p{Letter}+"
 DATA_DIR = "/run/media/maciej/Nowy/data/json/"
-
-import pickle
 
 phrases = Phrases()
 
@@ -30,7 +27,6 @@ def get_sum_data(files):
 
 def load_data(gb=1):
     total_judgments = []
-    # files = pickle.load(open('files.p', 'rb'))
     files = os.listdir(DATA_DIR)
 
     analyzed_files = []
@@ -46,16 +42,18 @@ def load_data(gb=1):
                 total_judgments += judgments
                 analyzed_files.append(file_path)
 
-            percentage_loaded = int(get_sum_data(analyzed_files) / 1024 / 1024 / gb * 100)
-            interval = percentage_loaded - last_value
-            bar.update(interval)
-            last_value = percentage_loaded
-            if percentage_loaded >= 100:
-                break
+            if analyzed_files:
+                percentage_loaded = int(get_sum_data(analyzed_files) / 1024 / 1024 / gb * 100)
+                interval = percentage_loaded - last_value
+
+                bar.update(interval)
+                last_value = percentage_loaded
+
+                if percentage_loaded >= 100:
+                    break
 
     total_words = []
 
-    i = 0
     for judgment in tqdm(total_judgments):
         judgment = regex.sub("<.*?>", "", judgment)
         judgment = regex.sub("-\n(\p{Letter}+)", r"\1", judgment)
@@ -66,7 +64,5 @@ def load_data(gb=1):
         for match in regex.finditer(word_pattern, judgment):
             words += match.captures()
 
-        total_words += words
-        i += 1
-        if i == 3:
-            return total_words
+        total_words.append(words)
+    return total_words
