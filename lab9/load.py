@@ -24,29 +24,35 @@ def get_sum_data(files):
     tuples = [x.split('\t') for x in lines]
     tuples = [tuple for tuple in tuples if tuple != ['']]
     sizes, _ = zip(*tuples)
-    size = sum([int(size) for size in sizes]) / 1024 / 1024
-    print(size * 100 // 1)
-    return size >= 1.0
+    size = sum([int(size) for size in sizes])
+    return size
 
 
-def load_data():
+def load_data(gb=1):
     total_judgments = []
     # files = pickle.load(open('files.p', 'rb'))
     files = os.listdir(DATA_DIR)
 
     analyzed_files = []
-    for file in files:
-        if file.startswith("judgment"):
-            file_path = os.path.join(DATA_DIR, file)
+    with tqdm(total=100) as bar:
+        last_value = 0
+        for file in files:
+            if file.startswith("judgment"):
+                file_path = os.path.join(DATA_DIR, file)
 
-            with open(file_path, 'r') as f:
-                data = json.load(f)
-                judgments = [x["textContent"] for x in data["items"]]
-            total_judgments += judgments
-            analyzed_files.append(file_path)
+                with open(file_path, 'r') as f:
+                    data = json.load(f)
+                    judgments = [x["textContent"] for x in data["items"]]
+                total_judgments += judgments
+                analyzed_files.append(file_path)
 
-            if get_sum_data(analyzed_files):
+            percentage_loaded = int(get_sum_data(analyzed_files) / 1024 / 1024 / gb * 100)
+            interval = percentage_loaded - last_value
+            bar.update(interval)
+            last_value = percentage_loaded
+            if percentage_loaded >= 100:
                 break
+
     total_words = []
 
     i = 0
@@ -64,14 +70,3 @@ def load_data():
         i += 1
         if i == 3:
             return total_words
-
-
-sentence_stream = load_data()
-
-bigrams = Phrases(sentence_stream)
-phraser_bigram = Phraser(bigrams)
-phraser_bigram.save('bigrams')
-
-trigrams = Phrases(bigrams[sentence_stream])
-phraser_trigram = Phraser(trigrams)
-phraser_trigram.save('trigrams')
