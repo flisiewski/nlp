@@ -5,7 +5,7 @@ from gensim.models import Phrases
 from tqdm import tqdm
 
 word_pattern = "\p{Letter}+"
-DATA_DIR = "/run/media/maciej/Nowy/data/json/"
+DATA_DIR = "/home/m.rapacz/Downloads/data/json"
 
 phrases = Phrases()
 
@@ -57,7 +57,6 @@ def load_data(gb=1):
     for judgment in tqdm(total_judgments):
         judgment = regex.sub("<.*?>", "", judgment)
         judgment = regex.sub("-\n(\p{Letter}+)", r"\1", judgment)
-        judgment = regex.sub("\n", "", judgment)
         judgment = judgment.lower()
 
         words = []
